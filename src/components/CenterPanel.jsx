@@ -14,8 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { pdf } from "@react-pdf/renderer";
 import PdfDocument from "./Pdfdocument";
-import { API_BASE_URL, authToken } from "../data";
-import axios from "axios";
+import { api } from "../data";
 
 // ── PDF Preview ───────────────────────────────────────────────────────────────
 function PdfPreview({ fileId }) {
@@ -37,11 +36,8 @@ function PdfPreview({ fileId }) {
     //   });
 
     const getFileUrl = async () => {
-      const res = await axios.get(`${API_BASE_URL}/files/${fileId}/preview`, {
+      const res = await api.get(`/files/${fileId}/preview`, {
         responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
       });
 
       const objectUrl = URL.createObjectURL(res.data);
