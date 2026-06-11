@@ -11,12 +11,14 @@ import RightPanel from "./components/RightPanel";
 import { useNav } from "./hooks/useNav";
 import { usePageDetails } from "./hooks/usePageDetails";
 import { useIntakeItems } from "./hooks/useIntakeItems";
+import { useAppConfig } from "./contexts/PivotlyAppConfigContext";
 
 const INBOUND_SLUG = "apg-dmc-inbound";
 
 export default function App() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { ready, error: configError } = useAppConfig();
 
   const { menuItems, defaultItem, loading: navLoading } = useNav();
   const {
@@ -35,13 +37,52 @@ export default function App() {
   } = useIntakeItems();
   const [selectedId, setSelectedId] = useState(null);
 
-  // Derive active item from current URL path, fall back to default
+  // ── Waiting for APP_CONFIG from parent ────────────────────────────────────
+  if (!ready && !configError) {
+    return (
+      <Center
+        style={{
+          height: "100vh",
+          flexDirection: "column",
+          gap: 12,
+          background: "#141414",
+        }}
+      >
+        <Loader color="red" size="sm" />
+        <Text size="xs" c="#666">
+          Waiting for configuration…
+        </Text>
+      </Center>
+    );
+  }
+
+  // ── Config error ──────────────────────────────────────────────────────────
+  if (configError) {
+    return (
+      <Center
+        style={{
+          height: "100vh",
+          flexDirection: "column",
+          gap: 8,
+          background: "#141414",
+        }}
+      >
+        <Text size="xs" c="#ef4444" fw={600}>
+          Configuration error
+        </Text>
+        <Text size="xs" c="#666">
+          {configError}
+        </Text>
+      </Center>
+    );
+  }
+
+  // ── Derive active nav item from URL, fall back to default ─────────────────
   const activeItem =
     menuItems.find((n) => n.path === pathname) ?? defaultItem ?? null;
 
   const resolvedSlug = activeItem?.page_slug ?? null;
   const isInbound = resolvedSlug === INBOUND_SLUG;
-
   const selectedItem =
     items.find((i) => i.id === selectedId) ?? items[0] ?? null;
 

@@ -21,6 +21,88 @@ export function setAuthToken(token) {
   }
 }
 
+// ── Token refresh interceptor ─────────────────────────────────────────────────
+// Single in-flight refresh promise — concurrent 401s share one refresh cycle
+let refreshPromise = null;
+
+function requestNewToken() {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error("Token refresh timed out after 30s"));
+    }, 30_000);
+
+    function cleanup() {
+      window.removeEventListener("message", handler);
+      clearTimeout(timeout);
+      refreshPromise = null;
+    }
+
+    function handler(event) {
+      if (!event.data) return;
+      if (
+        event.data.type === "PIVOTLY_AUTH_TOKEN_UPDATED" &&
+        event.data.token
+      ) {
+        cleanup();
+        setAuthToken(event.data.token);
+        resolve(event.data.token);
+      }
+    }
+
+    window.addEventListener("message", handler);
+    // Ask the parent to refresh the token
+    window.parent.postMessage({ type: "PIVOTLY_REFRESH_AUTH_TOKEN" }, "*");
+  });
+
+  return refreshPromise;
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config;
+    // Retry once on 401 — but not if this request is already a retry
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      try {
+        const newToken = await requestNewToken();
+        original.headers["Authorization"] = `Bearer ${newToken}`;
+        return api(original);
+      } catch (refreshError) {
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
+// ── API calls (slugs passed from hooks via context) ───────────────────────────
+export async function fetchNavItems(appPageSlug) {
+  const { data } = await api.get(`/native-apps/${appPageSlug}/resolve`);
+  console.log("Fetched nav items:", data);
+  return data?.data?.app?.pages;
+}
+
+export async function fetchPageDetails(appSlug, pageSlug) {
+  const { data } = await api.get(
+    `/native-apps/${appSlug}/pages/${pageSlug}/resolve`,
+  );
+  console.log("Fetched page details:", data);
+  return data;
+}
+
+export async function fetchIntakeItems() {
+  const { data } = await api.get("/apps/intake-items");
+  console.log("Fetched intake items:", data);
+  return data.map(transformItem);
+}
+
+
+// ──────────────────────────── CODE BELOW NOT IMPORTANT! ────────────────────────────
+
 // ── Transform a single raw API record → app shape ────────────────────────────
 export function transformItem(raw) {
   const details = raw.details
@@ -61,27 +143,6 @@ export function transformItem(raw) {
     warn,
     details,
   };
-}
-
-// ── API calls (appSlug / appPageSlug passed in from hooks via context) ────────
-export async function fetchNavItems(appSlug) {
-  const { data } = await api.get(`/native-apps/${appSlug}/resolve`);
-  console.log("Fetched nav items:", data);
-  return data?.data?.app?.pages;
-}
-
-export async function fetchPageDetails(appSlug, pageSlug) {
-  const { data } = await api.get(
-    `/native-apps/${appSlug}/pages/${pageSlug}/resolve`,
-  );
-  console.log("Fetched page details:", data);
-  return data;
-}
-
-export async function fetchIntakeItems() {
-  const { data } = await api.get("/apps/intake-items");
-  console.log("Fetched intake items:", data);
-  return data.map(transformItem);
 }
 
 // ── Detail accessor ───────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { fetchPageDetails } from "../data";
-import { useAppConfig } from "../contexts/AppConfigContext";
+import { useAppConfig } from "../contexts/PivotlyAppConfigContext";
 
 export function usePageDetails() {
   const { config } = useAppConfig();

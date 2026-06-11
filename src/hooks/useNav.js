@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchNavItems } from "../data";
-import { useAppConfig } from "../contexts/AppConfigContext";
+import { useAppConfig } from "../contexts/PivotlyAppConfigContext";
 
 const INBOUND_SLUG = "apg-dmc-inbound";
 
