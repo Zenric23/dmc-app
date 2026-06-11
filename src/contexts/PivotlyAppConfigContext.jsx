@@ -5,7 +5,9 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import { setAuthToken } from "../data";
+import { applyAuthToken } from "../data";
+
+const AppConfigContext = createContext(null);
 
 // ── postMessage event types shared between iframe and parent ─────────────────
 const MSG = {
@@ -17,7 +19,7 @@ const MSG = {
   AUTH_TOKEN_UPDATED: "PIVOTLY_AUTH_TOKEN_UPDATED",
 };
 
-const AppConfigContext = createContext(null);
+// ── Provider ──────────────────────────────────────────────────────────────────
 
 export function PivotlyAppConfigProvider({ children }) {
   const [config, setConfig] = useState({
@@ -44,7 +46,7 @@ export function PivotlyAppConfigProvider({ children }) {
             return;
           }
 
-          setAuthToken(authToken);
+          applyAuthToken(authToken);
           setConfig({ authToken, appSlug });
           setReady(true);
           break;
@@ -53,7 +55,7 @@ export function PivotlyAppConfigProvider({ children }) {
         // Parent sends a refreshed token
         case MSG.AUTH_TOKEN_UPDATED: {
           if (!event.data.token) return;
-          setAuthToken(event.data.token);
+          applyAuthToken(event.data.token);
           setConfig((prev) => ({ ...prev, authToken: event.data.token }));
           break;
         }
@@ -88,6 +90,8 @@ export function PivotlyAppConfigProvider({ children }) {
 export function useAppConfig() {
   const ctx = useContext(AppConfigContext);
   if (!ctx)
-    throw new Error("useAppConfig must be used within PivotlyAppConfigProvider");
+    throw new Error(
+      "useAppConfig must be used within PivotlyAppConfigProvider",
+    );
   return ctx;
 }
