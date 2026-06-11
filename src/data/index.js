@@ -6,16 +6,6 @@ export const API_BASE_URL =
 export const FILE_BASE_URL =
   import.meta.env.VITE_FILE_BASE_URL || "http://localhost:3000/files";
 
-// ── Auth token via postMessage from portal ────────────────────────────────────
-let _resolveToken;
-const _tokenReady = new Promise((resolve) => { _resolveToken = resolve; });
-
-globalThis.addEventListener("message", (event) => {
-  if (event.data?.type === "AUTH_TOKEN" && event.data?.token) {
-    _resolveToken(event.data.token);
-  }
-});
-
 // ── Axios instance ────────────────────────────────────────────────────────────
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -23,15 +13,17 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-api.interceptors.request.use(async (config) => {
-  const token = await _tokenReady;
-  config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+export function setAuthToken(token) {
+  if (token) {
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common["Authorization"];
+  }
+}
 
 // ── Transform a single raw API record → app shape ────────────────────────────
 export function transformItem(raw) {
-  const details = raw.detailsS
+  const details = raw.details
     ? typeof raw.details === "string"
       ? JSON.parse(raw.details)
       : raw.details
@@ -71,14 +63,17 @@ export function transformItem(raw) {
   };
 }
 
-// ── API calls ─────────────────────────────────────────────────────────────────
-export async function fetchNavItems() {
-  const res = await api.get(`/native-apps/test-app-10/resolve`);
-  return res.data?.data.app?.pages;
+// ── API calls (appSlug / appPageSlug passed in from hooks via context) ────────
+export async function fetchNavItems(appSlug) {
+  const { data } = await api.get(`/native-apps/${appSlug}/resolve`);
+  console.log("Fetched nav items:", data);
+  return data?.data?.app?.pages;
 }
 
-export async function fetchPageDetails() {
-  const { data } = await api.get(`/native-apps/test-app-10/pages/apg-test1/resolve`);
+export async function fetchPageDetails(appSlug, pageSlug) {
+  const { data } = await api.get(
+    `/native-apps/${appSlug}/pages/${pageSlug}/resolve`,
+  );
   console.log("Fetched page details:", data);
   return data;
 }
