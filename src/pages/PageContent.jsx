@@ -1,5 +1,6 @@
 import { Box, Text, Loader, Center, Code, ScrollArea, Group } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons-react'
+import DomainDataTable from '../components/DomainDataTable'
 
 // ── Section renderer for each top-level key in data.data ─────────────────────
 function Section({ title, data }) {
@@ -85,6 +86,9 @@ export default function PageContent({ pageData, loading, error, slug, onRetry })
   const inner = pageData?.data || pageData
   const { page, claims, data_access, actions } = inner
 
+  const domainSources = (Array.isArray(data_access) ? data_access : [data_access])
+    .filter(s => s?.source_type === 'domain' && s?.domain)
+
   const sections = [
     { key: 'page',        title: 'Page Definition',  data: page },
     { key: 'data_access', title: 'Data Access',       data: data_access },
@@ -106,6 +110,10 @@ export default function PageContent({ pageData, loading, error, slug, onRetry })
           {!page && !claims && !data_access && !actions && (
             <Section title="Raw Response" data={pageData} />
           )}
+
+          {domainSources.map(s => (
+            <DomainDataTable key={s.domain} domain={s.domain} system={s.system || 'core'} />
+          ))}
         </Box>
       </ScrollArea>
     </Box>

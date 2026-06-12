@@ -91,6 +91,59 @@ export async function fetchPageDetails(appSlug, pageSlug) {
   return data
 }
 
+export async function fetchDomainRecords({ domain, system, appSlug, limit = 25, offset = 0 }) {
+  const { data } = await api.post('/core-data-read', {
+    parameters: { domain, system, app_slug: appSlug },
+    limit,
+    offset,
+  })
+  return data
+}
+
+export async function createDomainRecord({ domain, system, appSlug, recordData }) {
+  const { data } = await api.post('/core-data-write', {
+    parameters: {
+      domain,
+      system,
+      operation: 'insert',
+      latency: 'synchronous',
+      app_slug: appSlug,
+    },
+    data: recordData,
+  })
+  return data
+}
+
+export async function updateDomainRecord({ domain, system, appSlug, recordId, recordData }) {
+  const { data } = await api.post('/core-data-write', {
+    parameters: {
+      domain,
+      system,
+      operation: 'update',
+      latency: 'synchronous',
+      app_slug: appSlug,
+      core_record_id: recordId,
+    },
+    data: recordData,
+  })
+  return data
+}
+
+export async function deleteDomainRecord({ domain, system, appSlug, recordId }) {
+  const { data } = await api.post('/core-data-write', {
+    parameters: {
+      domain,
+      system,
+      operation: 'delete',
+      latency: 'synchronous',
+      app_slug: appSlug,
+      core_record_id: recordId,
+    },
+    data: {},
+  })
+  return data
+}
+
 export async function fetchIntakeItems() {
   const { data } = await api.get('/apps/intake-items')
   console.log('Fetched intake items:', data)
