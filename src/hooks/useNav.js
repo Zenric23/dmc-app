@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { fetchNavItems } from "../data";
 import { useAppConfig } from "../contexts/PivotlyAppConfigContext";
 
-const INBOUND_SLUG = "apg-dmc-inbound";
-
 export function useNav() {
   const { config } = useAppConfig();
   const [navItems, setNavItems] = useState([]);
@@ -20,12 +18,11 @@ export function useNav() {
 
   const apiMenuItems = navItems.filter((n) => n.show_in_menu && n.visible);
 
-  const menuItems = [
-    ...apiMenuItems.filter((n) => n.page_slug !== INBOUND_SLUG),
-  ].sort((a, b) => a.display_order - b.display_order);
+  const menuItems = [...apiMenuItems].sort(
+    (a, b) => a.display_order - b.display_order,
+  );
 
-  const defaultItem =
-    menuItems.find((n) => n.page_slug === INBOUND_SLUG) ?? menuItems[0] ?? null;
+  const defaultItem = null;
 
   return { navItems, menuItems, defaultItem, loading, error };
 }

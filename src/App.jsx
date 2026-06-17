@@ -7,8 +7,6 @@ import { useNav } from "./hooks/useNav";
 import { usePageDetails } from "./hooks/usePageDetails";
 import { useAppConfig } from "./contexts/PivotlyAppConfigContext";
 
-const INBOUND_SLUG = "apg-dmc-inbound";
-
 export default function App() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -71,13 +69,11 @@ export default function App() {
 
   function handleNav(navItem) {
     navigate(navItem.path);
-    if (navItem.page_slug !== INBOUND_SLUG) {
-      loadPage(navItem.page_slug);
-    }
+    loadPage(navItem.page_slug);
   }
 
   function handleRetry() {
-    if (resolvedSlug && resolvedSlug !== INBOUND_SLUG) loadPage(resolvedSlug);
+    if (resolvedSlug) loadPage(resolvedSlug);
   }
 
   return (
@@ -98,13 +94,29 @@ export default function App() {
         navLoading={navLoading}
       />
 
-      <PageContent
-        pageData={pageData}
-        loading={pageLoading}
-        error={pageError}
-        slug={slug}
-        onRetry={handleRetry}
-      />
+      {activeItem ? (
+        <PageContent
+          pageData={pageData}
+          loading={pageLoading}
+          error={pageError}
+          slug={slug}
+          onRetry={handleRetry}
+        />
+      ) : (
+        <Box
+          style={{
+            height: "80vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: 24,
+            fontWeight: "bold",
+            opacity: 0.7,
+          }}
+        >
+          Select navigation item above
+        </Box>
+      )}
     </Box>
   );
 }
