@@ -3,7 +3,7 @@ import { requestNewToken, setAuthToken } from '../helpers/PivotlyHelpers'
 
 // ── API config ────────────────────────────────────────────────────────────────
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v3'
+  import.meta.env.VITE_API_BASE_URL || 'https://dev.pivotly.com/vm/api/v3'
 export const FILE_BASE_URL =
   import.meta.env.VITE_FILE_BASE_URL || 'http://localhost:3000/files'
 
@@ -151,12 +151,6 @@ export async function deleteDomainRecord({ domain, system, appSlug, recordId }) 
     data: {},
   })
   return data
-}
-
-export async function fetchIntakeItems() {
-  const { data } = await api.get('/apps/intake-items')
-  console.log('Fetched intake items:', data)
-  return data.map(transformItem)
 }
 
 // ── Detail accessor ───────────────────────────────────────────────────────────

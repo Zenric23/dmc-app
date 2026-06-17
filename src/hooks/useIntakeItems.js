@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchIntakeItems } from "../data";
+import { fetchDomainRecords, transformItem } from "../data";
 import { useAppConfig } from "../contexts/PivotlyAppConfigContext";
 
-export function useIntakeItems() {
-  const { ready } = useAppConfig();
+export function useIntakeItems({ domain, system }) {
+  const { ready, config } = useAppConfig();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,14 +12,18 @@ export function useIntakeItems() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchIntakeItems();
-      setItems(data);
+      const { data } = await fetchDomainRecords({
+        domain,
+        system,
+        appSlug: config.appSlug,
+      });
+      setItems(data.map(transformItem));
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [config.appSlug, domain, system]);
 
   useEffect(() => {
     if (!ready) return;

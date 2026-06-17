@@ -4,15 +4,6 @@ import { useAppConfig } from "../contexts/PivotlyAppConfigContext";
 
 const INBOUND_SLUG = "apg-dmc-inbound";
 
-const INBOUND_ITEM = {
-  page_slug: INBOUND_SLUG,
-  path: "/inbound",
-  label: "Inbound",
-  show_in_menu: true,
-  display_order: 20,
-  visible: true,
-};
-
 export function useNav() {
   const { config } = useAppConfig();
   const [navItems, setNavItems] = useState([]);
@@ -30,7 +21,6 @@ export function useNav() {
   const apiMenuItems = navItems.filter((n) => n.show_in_menu && n.visible);
 
   const menuItems = [
-    INBOUND_ITEM,
     ...apiMenuItems.filter((n) => n.page_slug !== INBOUND_SLUG),
   ].sort((a, b) => a.display_order - b.display_order);
 
