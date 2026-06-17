@@ -18,6 +18,15 @@ export const api = axios.create({
 // ── Bound token setter — callers pass just the token ────────────────────────
 export const applyAuthToken = (token) => setAuthToken(api, token)
 
+// ── Bound app-slug setter — sets x-app-slug on every outgoing request ────────
+export const applyAppSlug = (appSlug) => {
+  if (appSlug) {
+    api.defaults.headers.common['x-app-slug'] = appSlug
+  } else {
+    delete api.defaults.headers.common['x-app-slug']
+  }
+}
+
 // ── 401 interceptor — delegates token refresh to tokenHelper ─────────────────
 api.interceptors.response.use(
   response => response,

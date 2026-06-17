@@ -5,7 +5,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import { applyAuthToken } from "../data";
+import { applyAuthToken, applyAppSlug } from "../data";
 
 const AppConfigContext = createContext(null);
 
@@ -47,6 +47,7 @@ export function PivotlyAppConfigProvider({ children }) {
           }
 
           applyAuthToken(authToken);
+          applyAppSlug(appSlug);
           setConfig({ authToken, appSlug });
           setReady(true);
           break;

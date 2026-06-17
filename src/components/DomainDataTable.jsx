@@ -3,7 +3,14 @@ import { Box, Text, Group, Button, Table, Loader, Center, Modal, TextInput } fro
 import { IconPlus, IconRefresh, IconPencil, IconTrash } from '@tabler/icons-react'
 import { useDomainData } from '../hooks/useDomainData'
 
-export default function DomainDataTable({ domain, system }) {
+export default function DomainDataTable({ domain, system, actions = [] }) {
+  const isEnabled = (key) => {
+    const match = actions.find(a => a.action_key === key)
+    return match ? match.enabled : true  // default to true if action not declared
+  }
+  const canCreate = isEnabled('create_record')
+  const canUpdate = isEnabled('update_record')
+  const canDelete = isEnabled('delete_record')
   const { records, loading, error, creating, updating, deleting, reload, create, update, remove } = useDomainData({ domain, system })
 
   // Create modal
@@ -60,14 +67,16 @@ export default function DomainDataTable({ domain, system }) {
             <Box onClick={reload} style={{ cursor: 'pointer', color: '#aaa', display: 'flex', alignItems: 'center' }}>
               <IconRefresh size={13} />
             </Box>
-            <Button
-              size="xs"
-              leftSection={<IconPlus size={12} />}
-              onClick={() => setCreateOpen(true)}
-              style={{ background: '#dc2626', border: 'none', fontSize: 12 }}
-            >
-              New Record
-            </Button>
+            {canCreate && (
+              <Button
+                size="xs"
+                leftSection={<IconPlus size={12} />}
+                onClick={() => setCreateOpen(true)}
+                style={{ background: '#dc2626', border: 'none', fontSize: 12 }}
+              >
+                New Record
+              </Button>
+            )}
           </Group>
         </Group>
       </Box>
@@ -102,18 +111,22 @@ export default function DomainDataTable({ domain, system }) {
                     ))}
                     <Table.Td>
                       <Group gap={4} justify="center">
-                        <Box
-                          onClick={() => openEdit(row)}
-                          style={{ cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center' }}
-                        >
-                          <IconPencil size={13} />
-                        </Box>
-                        <Box
-                          onClick={() => setDeleteRow(row)}
-                          style={{ cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center' }}
-                        >
-                          <IconTrash size={13} />
-                        </Box>
+                        {canUpdate && (
+                          <Box
+                            onClick={() => openEdit(row)}
+                            style={{ cursor: 'pointer', color: '#888', display: 'flex', alignItems: 'center' }}
+                          >
+                            <IconPencil size={13} />
+                          </Box>
+                        )}
+                        {canDelete && (
+                          <Box
+                            onClick={() => setDeleteRow(row)}
+                            style={{ cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center' }}
+                          >
+                            <IconTrash size={13} />
+                          </Box>
+                        )}
                       </Group>
                     </Table.Td>
                   </Table.Tr>

@@ -112,7 +112,7 @@ export default function PageContent({ pageData, loading, error, slug, onRetry })
           )}
 
           {domainSources.map(s => (
-            <DomainDataTable key={s.domain} domain={s.domain} system={s.system || 'core'} />
+            <DomainDataTable key={s.domain} domain={s.domain} system={s.system || 'core'} actions={actions} />
           ))}
         </Box>
       </ScrollArea>

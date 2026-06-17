@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchIntakeItems } from "../data";
+import { useAppConfig } from "../contexts/PivotlyAppConfigContext";
 
 export function useIntakeItems() {
+  const { ready } = useAppConfig();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,8 +22,9 @@ export function useIntakeItems() {
   }, []);
 
   useEffect(() => {
+    if (!ready) return;
     load();
-  }, [load]);
+  }, [ready, load]);
 
   const stats = {
     total: items.length,
